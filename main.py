@@ -1,9 +1,13 @@
 import tkinter as tk
 from math import sqrt
+from typing import List
+
+from PIL import ImageTk, Image
 
 
 class Calculator:
     def __init__(self, master: tk.Tk):
+        self.master = master
         self.str1 = tk.StringVar()
         self.str1.trace_add("write", self.change_formula)
         self.str2 = tk.StringVar()
@@ -40,35 +44,49 @@ class Calculator:
         self.output_label = tk.Label(master)
         self.output_label.grid(row=2, column=0, columnspan=3)
         self.calculate_button = tk.Button(master, text="Вычислить", command=self.calculate)
-        self.calculate_button.grid(row=3, column=0, columnspan=3)
+        self.calculate_button.grid(row=10, column=0, columnspan=3)
 
     def calculate(self):
         try:
-            a, b, c = int(self.a.get()), int(self.b.get()), int(self.c.get()),
+            a, b, c = float(self.a.get()), float(self.b.get()), float(self.c.get()),
         except ValueError:
             self.output_label.config(text="Error")
             return
+        lst = []
         d = b * b - 4 * a * c
+        lst.append(f"D = b{chr(178)} - 4 * a * c = {b * b} - {4 * a * c} = {d}")
         if d < 0:
             self.output_label.config(text="Нет корней")
             return
         roots = {(-b - sqrt(d)) / 2*a, (-b + sqrt(d)) / 2*a}
         if len(roots) == 2:
+            lst.append(f"x = (-b - sqrt(D)) / 2 * a = {(-b - sqrt(d)) / 2 * a}")
+            lst.append(f"x = (-b + sqrt(D)) / 2 * a = {(-b + sqrt(d)) / 2 * a}")
             n1, n2 = sorted(roots)
             self.output_label.config(text=f"Корни: {n1}; {n2}")
         else:
+            lst.append(f"x = -b / 2 * a = {-b / 2 * a}")
             n = roots.pop()
             self.output_label.config(text=f"Корень: {n}")
+        self.log(lst)
+
+    def log(self, lst: List[str]):
+        for i, string in enumerate(lst):
+            tk.Label(self.master, text=string).grid(row=i + 3, column=1)
 
     def change_formula(self, *args):
         try:
-            a, b, c = int(self.a.get()), int(self.b.get()), int(self.c.get()),
+            a, b, c = float(self.a.get()), float(self.b.get()), float(self.c.get()),
         except ValueError:
             return
         self.formula_label.config(text=f"{a}x{chr(178)} {'-' if b < 0 else '+'} {abs(b)}x {'-' if c < 0 else '+'} {abs(c)} = 0")
 
 
 root = tk.Tk()
-calculator = Calculator(root)
+canvas = tk.Canvas(root, bg='white')
+canvas.place(relwidth=1, relheight=1)
+img = ImageTk.PhotoImage(Image.open("img.png"))
+canvas.create_image(-1, -1, anchor=tk.NW, image=img)
+calculator = Calculator(canvas)
 root.mainloop()
 
